@@ -37,6 +37,7 @@ def transfer(sender_name, receiver_name, amountRaw):
 		sender_acc.save()
 		receiver_acc.save()
 
+# login_url="/accounts/login" (default param)
 @login_required
 def transferView(request):
 	
@@ -50,7 +51,7 @@ def transferView(request):
 	
 	return redirect('/')
 
-
+# login_url="/accounts/login"
 @login_required
 def homePageView(request):
 	accounts = Account.objects.exclude(user_id=request.user.id)
