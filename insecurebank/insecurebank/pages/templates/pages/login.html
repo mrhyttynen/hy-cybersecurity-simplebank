@@ -1,0 +1,14 @@
+<h2>Login</h2>
+<form method="post">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit">Login</button>
+</form>
+
+<h2>No account yet? Create one Here. This also creates a bank account with 100 free credit!</h2>
+<form id='createAccount' action='createaccount/' method="POST">
+  {% csrf_token %}
+  <input type="text" name="username"/><br/>
+  <input type="password" name="password"/><br/>
+  <input type="submit" value="Create Account"/>
+</form>
