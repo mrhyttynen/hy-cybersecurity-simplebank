@@ -9,15 +9,18 @@ def createAccountView(request):
 	
 	if request.method == 'POST':
 		request_username = request.POST.get('username')
+		# A02-0: sensitive data (email) transmitted as clear text (FIX would be to use HTTPS for traffic 
+		# between frontend and backend, not implemented)
 		request_email = request.POST.get('email')
 		if not request_email:
 			return render(request, 'pages/error.html', {'errormessage': f'email is required when creating account'})
 		try:
 			print("CREATING ACCOUNT", request_username, "EMAIL", request_email)
-			# FIX A02
+			# A02-1: hardcoded default password
+			user = User.objects.create_user(username=request_username, password="12345")
+			# FIX A02-1: use password defined by user
 			# user = User.objects.create_user(username=request_username, password=request.POST.get('password'))
-			user = User.objects.create_user(username=request_username, email=request_email, password="12345")
-			Account.objects.create(user=user, balance=100)
+			Account.objects.create(user=user, email=request_email, balance=100)
 			return redirect('/accountcreatesuccess/')
 		except IntegrityError:
 			return render(request, 'pages/error.html', {'errormessage': f'Account Create Failed: username already exists: {request_username}'})

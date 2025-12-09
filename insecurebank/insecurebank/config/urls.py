@@ -21,7 +21,6 @@ from django.contrib.auth.views import LoginView, LogoutView
 urlpatterns = [
     path('admin/', admin.site.urls),
 	path('accounts/login/', LoginView.as_view(template_name='pages/login.html', next_page="/")),
-    # path('accounts/login/', LoginView.as_view(template_name='pages/login.html')),
 	path('accounts/logout/', LogoutView.as_view(next_page='/')),
 	path('', include('insecurebank.pages.urls'))
 ]
