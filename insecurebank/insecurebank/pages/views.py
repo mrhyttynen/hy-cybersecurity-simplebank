@@ -1,7 +1,6 @@
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
-# from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.models import User
 from django.db import IntegrityError, transaction
 from .models import Account
@@ -10,15 +9,18 @@ def createAccountView(request):
 	
 	if request.method == 'POST':
 		request_username = request.POST.get('username')
+		request_email = request.POST.get('email')
+		if not request_email:
+			return render(request, 'pages/error.html', {'errormessage': f'email is required when creating account'})
 		try:
-			print("CREATING ACCOUNT")
+			print("CREATING ACCOUNT", request_username, "EMAIL", request_email)
 			# FIX A02
 			# user = User.objects.create_user(username=request_username, password=request.POST.get('password'))
-			user = User.objects.create_user(username=request_username, password="12345")
+			user = User.objects.create_user(username=request_username, email=request_email, password="12345")
 			Account.objects.create(user=user, balance=100)
 			return redirect('/accountcreatesuccess/')
 		except IntegrityError:
-			return render(request, 'pages/accountCreateFailed.html', {'username': request_username})
+			return render(request, 'pages/error.html', {'errormessage': f'Account Create Failed: username already exists: {request_username}'})
 	else:
 		return redirect('/')
 
@@ -37,7 +39,7 @@ def updatePasswordView(request):
 			user.save()
 			return redirect('/passwordupdatesuccess/')
 		except:
-			return render(request, 'pages/passwordUpdateFailed.html', {'username': request_username})
+			return render(request, 'pages/error.html', {'errormessage': f'Password update failed for {request_username}'})
 	else:
 		return redirect('/')
 
