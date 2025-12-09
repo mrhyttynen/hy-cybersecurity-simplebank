@@ -3,18 +3,26 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 # from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.models import User
-from django.db import transaction
+from django.db import IntegrityError, transaction
 from .models import Account
 
 def createAccountView(request):
 	
 	if request.method == 'POST':
-		print("CREATING ACCOUNT")
-		user = User.objects.create_user(username=request.POST.get('username'), password=request.POST.get('password'))
-		# user.save() # may not be needed
-		Account.objects.create(user=user, balance=100)
+		request_username = request.POST.get('username')
+		try:
+			print("CREATING ACCOUNT")
+			user = User.objects.create_user(username=request_username, password=request.POST.get('password'))
+			# user.save() # may not be needed
+			Account.objects.create(user=user, balance=100)
+			return redirect('/accountCreateSuccess/')
+		except IntegrityError:
+			return render(request, 'pages/accountCreateFailed.html', {'username': request_username})
+	else:
+		return redirect('/')
+
 	
-	return redirect('/accountCreateSuccess/')
+	
 
 def accountCreateSuccessView(request):
 	return render(request, 'pages/accountCreateSuccess.html')
