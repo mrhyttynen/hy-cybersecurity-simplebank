@@ -20,6 +20,13 @@
 			{% csrf_token %}
             <input type="submit" value="Logout"/>
         </form>
+        <h2>Update password</h2>
+        <form id='updatePassword' action='updatepassword/' method="POST">             
+            {% csrf_token %}
+            <span>New password:</span><br/>
+            <input type="password" name="newpassword"/><br/>
+            <input type="submit" value="Update"/>
+        </form>
 		
         <h2>Transfer money</h2>
 

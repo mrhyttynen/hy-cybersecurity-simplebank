@@ -12,20 +12,37 @@ def createAccountView(request):
 		request_username = request.POST.get('username')
 		try:
 			print("CREATING ACCOUNT")
-			user = User.objects.create_user(username=request_username, password=request.POST.get('password'))
-			# user.save() # may not be needed
+			# FIX A02
+			# user = User.objects.create_user(username=request_username, password=request.POST.get('password'))
+			user = User.objects.create_user(username=request_username, password="12345")
 			Account.objects.create(user=user, balance=100)
-			return redirect('/accountCreateSuccess/')
+			return redirect('/accountcreatesuccess/')
 		except IntegrityError:
 			return render(request, 'pages/accountCreateFailed.html', {'username': request_username})
 	else:
 		return redirect('/')
 
-	
-	
-
 def accountCreateSuccessView(request):
 	return render(request, 'pages/accountCreateSuccess.html')
+
+@login_required
+def updatePasswordView(request):
+	if request.method == 'POST':
+		new_password = request.POST.get('newpassword')
+		request_username = request.user.username
+		user = User.objects.get(username=request_username)
+		print("UPDATING PASSWORD FOR", request_username, "as", new_password)
+		try:
+			user.set_password(new_password)
+			user.save()
+			return redirect('/passwordupdatesuccess/')
+		except:
+			return render(request, 'pages/passwordUpdateFailed.html', {'username': request_username})
+	else:
+		return redirect('/')
+
+def passwordUpdateSuccessView(request):
+	return render(request, 'pages/passwordUpdateSuccess.html')
 
 def transfer(sender_name, receiver_name, amountRaw):
 	with transaction.atomic():
