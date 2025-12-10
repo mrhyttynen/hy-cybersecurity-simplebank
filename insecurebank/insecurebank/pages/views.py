@@ -97,5 +97,8 @@ def transferView(request):
 # login_url="/accounts/login"
 @login_required
 def homePageView(request):
+	# A07-2: session ID expires by default in 14 days (too long of an inactivity period)
+	# FIX A07-2: set expiry to 10 minutes
+	# request.session.set_expiry(600)
 	accounts = Account.objects.exclude(user_id=request.user.id)
 	return render(request, 'pages/index.html', {'accounts': accounts})
