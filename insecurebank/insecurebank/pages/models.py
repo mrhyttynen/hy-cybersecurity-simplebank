@@ -16,6 +16,6 @@ class Account(models.Model):
 	# A02-2: sensitive data (email) stored at rest in unencrypted format
 	email = models.CharField(max_length=100)
 	balance = models.IntegerField()
-	# A02-2 FIX: encrypting the data using symmetric key
+	# FIX A02-2: encrypting the data using symmetric key
 	# email = encrypt(models.CharField(max_length=100))
 	# balance = encrypt(models.IntegerField())

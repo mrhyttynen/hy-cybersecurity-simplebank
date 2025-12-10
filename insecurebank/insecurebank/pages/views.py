@@ -62,7 +62,7 @@ def updatePasswordView(request):
 def passwordUpdateSuccessView(request):
 	return render(request, 'pages/passwordUpdateSuccess.html')
 
-# A03 FIX: prevent injection by using ORM, including validation
+# FIX A03: prevent injection by using ORM, including validation
 def transfer(sender_name, receiver_name, amountRaw):
 	with transaction.atomic():
 
@@ -101,7 +101,7 @@ def transferView(request):
 			cursor.execute(f"""
 				UPDATE pages_account SET balance = balance + {amount} WHERE name = '{receiver_name}';
 			""")
-		# A03 FIX: prevent injection by parsing input amount as an integer 
+		# FIX A03: prevent injection by parsing input amount as an integer 
 		# and using ORM inside transfer function 
 		# amount = int(request.POST.get('amount'))
 		# print(amount, "from", sender_name, "to", receiver_name)
@@ -117,3 +117,14 @@ def homePageView(request):
 	# request.session.set_expiry(600)
 	accounts = Account.objects.exclude(user_id=request.user.id)
 	return render(request, 'pages/index.html', {'accounts': accounts})
+
+
+# A01: accessing BeautifulBalance page only requires attacker to know 
+# the user ID (insecure direct object reference)
+@login_required
+def beautifulBalanceView(request, uid):
+	acc = Account.objects.get(user_id=uid)
+	# FIX A01: instead of getting the User id via URL parameter, 
+	# get it only for current user using the user object
+	# acc = Account.objects.get(user_id=request.user.id)
+	return render(request, 'pages/beautifulBalance.html', {'user': acc.name, 'balance': acc.balance})

@@ -17,6 +17,8 @@
 		<th style="text-align:left">Balance:  <td>{{user.account.balance}}
 		</table>
 
+        <a href="/beautifulbalance/{{user.id}}">View your beautiful balance here!</a>
+
 
         <form action='accounts/logout/' method="POST">
 			{% csrf_token %}
