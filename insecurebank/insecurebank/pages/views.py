@@ -2,7 +2,7 @@ from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from django.contrib.auth.models import User
-from django.db import IntegrityError, transaction
+from django.db import IntegrityError, transaction, connection
 from .models import Account
 import os
 
@@ -19,7 +19,7 @@ def createAccountView(request):
 			print("CREATING ACCOUNT", request_username, "EMAIL", request_email)
 			# A07-1: hardcoded default password
 			user = User.objects.create_user(username=request_username, password="12345")
-			Account.objects.create(user=user, email=request_email, balance=100)
+			Account.objects.create(user=user, name=request_username, email=request_email, balance=100)
 			return redirect('/accountcreatesuccess/')
 			
 			# FIX A07-1: use password defined by user, and not allowing common passwords
@@ -62,6 +62,7 @@ def updatePasswordView(request):
 def passwordUpdateSuccessView(request):
 	return render(request, 'pages/passwordUpdateSuccess.html')
 
+# A03 FIX: prevent injection by using ORM, including validation
 def transfer(sender_name, receiver_name, amountRaw):
 	with transaction.atomic():
 
@@ -88,9 +89,23 @@ def transferView(request):
 		print("POSTING")
 		sender_name = request.user.username
 		receiver_name = request.POST.get('to')
-		amount = int(request.POST.get('amount'))
-		print(amount, "from", sender_name, "to", receiver_name)
-		transfer(sender_name, receiver_name, amount)
+		# A03: SQL Injection via amount variable allows attacker to update all emails
+		# to e.g. "PRANKED" by placing the following input into the transfer amount field:
+		# 0, email='PRANKED' --
+		amount = request.POST.get('amount')
+		print("sending ", amount, "from", sender_name, "to", receiver_name)
+		with connection.cursor() as cursor:
+			cursor.execute(f"""
+				UPDATE pages_account SET balance = balance - {amount} WHERE name = '{sender_name}';
+			""")
+			cursor.execute(f"""
+				UPDATE pages_account SET balance = balance + {amount} WHERE name = '{receiver_name}';
+			""")
+		# A03 FIX: prevent injection by parsing input amount as an integer 
+		# and using ORM inside transfer function 
+		# amount = int(request.POST.get('amount'))
+		# print(amount, "from", sender_name, "to", receiver_name)
+		# transfer(sender_name, receiver_name, amount)
 	
 	return redirect('/')
 
