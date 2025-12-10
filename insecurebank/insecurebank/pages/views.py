@@ -89,8 +89,8 @@ def transferView(request):
 		print("POSTING")
 		sender_name = request.user.username
 		receiver_name = request.POST.get('to')
-		# A03: SQL Injection via amount variable allows attacker to update all emails
-		# to e.g. "PRANKED" by placing the following input into the transfer amount field:
+		# A03: SQL Injection via amount variable allows attacker to e.g. update all emails
+		# to "PRANKED" by placing the following input into the transfer amount field:
 		# 0, email='PRANKED' --
 		amount = request.POST.get('amount')
 		print("sending ", amount, "from", sender_name, "to", receiver_name)
