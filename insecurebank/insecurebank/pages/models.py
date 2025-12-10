@@ -12,7 +12,7 @@ from django_cryptography.fields import encrypt
 
 class Account(models.Model):
 	user = models.OneToOneField(User, on_delete=models.CASCADE)
-	# A02-2: sensitive data stored in unencrypted format
+	# A02-2: sensitive data (email) stored at rest in unencrypted format
 	email = models.CharField(max_length=100)
 	balance = models.IntegerField()
 	# A02-2 FIX: encrypting the data using symmetric key

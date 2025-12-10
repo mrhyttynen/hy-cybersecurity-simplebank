@@ -4,6 +4,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.models import User
 from django.db import IntegrityError, transaction
 from .models import Account
+import os
 
 def createAccountView(request):
 	
@@ -16,12 +17,24 @@ def createAccountView(request):
 			return render(request, 'pages/error.html', {'errormessage': f'email is required when creating account'})
 		try:
 			print("CREATING ACCOUNT", request_username, "EMAIL", request_email)
-			# A02-1: hardcoded default password
+			# A07-1: hardcoded default password
 			user = User.objects.create_user(username=request_username, password="12345")
-			# FIX A02-1: use password defined by user
-			# user = User.objects.create_user(username=request_username, password=request.POST.get('password'))
 			Account.objects.create(user=user, email=request_email, balance=100)
 			return redirect('/accountcreatesuccess/')
+			
+			# FIX A07-1: use password defined by user, and not allowing common passwords
+			# pwd = request.POST.get('password')
+			# script_dir = os.path.dirname(os.path.abspath(__file__))
+			# file_path = os.path.join(script_dir, "worst_passwords.txt")
+			# with open(file_path, "r") as f:
+			# 	weak_passwords = f.read().splitlines()
+			# if pwd not in weak_passwords:
+			# 	user = User.objects.create_user(username=request_username, password=pwd)
+			# 	Account.objects.create(user=user, email=request_email, balance=100)
+			# 	return redirect('/accountcreatesuccess/')
+			# else:
+			# 	return render(request, 'pages/error.html', {'errormessage': f'choose a stronger password'})
+		
 		except IntegrityError:
 			return render(request, 'pages/error.html', {'errormessage': f'Account Create Failed: username already exists: {request_username}'})
 	else:
