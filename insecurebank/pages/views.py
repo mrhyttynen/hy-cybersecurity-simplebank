@@ -103,14 +103,14 @@ def transferView(request):
 		print("POSTING")
 		sender_name = request.user.username
 		receiver_name = request.POST.get('to')
-		# A03: SQL Injection via amount variable allows attacker to e.g. update all emails
-		# to "PRANKED" by placing the following input into the transfer amount field:
-		# 0, email='PRANKED' --
 		amount = request.POST.get('amount')
 		# A09-3: not logging recipient of transfer
 		logging.info(f"TRANSFERRING {amount} from {sender_name}")
 		# FIX A09-3: adding recipient information into log
 		# logging.info(f"TRANSFERRING {amount} from {sender_name} to {receiver_name}")
+		# A03: SQL Injection via amount variable allows attacker to e.g. update all emails
+		# to "PRANKED" by placing the following input into the transfer amount field:
+		# 0, email='PRANKED' --
 		with connection.cursor() as cursor:
 			cursor.execute(f"""
 				UPDATE pages_account SET balance = balance - {amount} WHERE name = '{sender_name}';
