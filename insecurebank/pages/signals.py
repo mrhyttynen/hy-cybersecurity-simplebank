@@ -13,9 +13,9 @@ logger = logging.getLogger("insecurebank")
 @receiver(user_logged_in)
 def log_user_login(sender, request, user, **kwargs):
     logger.info(
-        # A09-4: Omission of security relevant information, not logging IP address of login (potential hacker)
+        # A09-1: Omission of security relevant information, not logging IP address of login (potential hacker)
         f"User logged in: {user.username}",
-        # FIX A09-4: logging IP address of user logging in
+        # FIX A09-1: logging IP address of user logging in
         # f"User logged in: {user.username} from {request.META.get('REMOTE_ADDR')}",
         extra={
             "username": user.username,
@@ -40,7 +40,7 @@ def log_user_logout(sender, request, user, **kwargs):
 # def log_user_login_failed(sender, credentials, request, **kwargs):
 #     username = credentials.get("username")
 #     logger.warning(
-#         f"User login failed: {username}",
+#         f"User login failed: {username} from {request.META.get('REMOTE_ADDR')}",
 #         extra={
 #             "username": username,
 #             "ip": request.META.get("REMOTE_ADDR") if request else None,
