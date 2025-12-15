@@ -1,0 +1,1 @@
+default_app_config = "insecurebank.pages.apps.PagesConfig"

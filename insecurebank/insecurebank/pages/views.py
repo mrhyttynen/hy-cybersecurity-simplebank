@@ -4,7 +4,16 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.models import User
 from django.db import IntegrityError, transaction, connection
 from .models import Account
+import logging
 import os
+
+logger = logging.getLogger("insecurebank")
+logging.basicConfig(
+	level=logging.INFO, 
+	filename='insecurebank.log', 
+	format='%(asctime)s --- %(message)s', 
+	datefmt='%d/%m/%Y %H:%M:%S'
+)
 
 def createAccountView(request):
 	
@@ -14,9 +23,10 @@ def createAccountView(request):
 		# between frontend and backend, not implemented)
 		request_email = request.POST.get('email')
 		if not request_email:
+			logger.error('ERROR: email missing in transfer POST request')
 			return render(request, 'pages/error.html', {'errormessage': f'email is required when creating account'})
 		try:
-			print("CREATING ACCOUNT", request_username, "EMAIL", request_email)
+			logging.info(f"CREATING ACCOUNT {request_username} with email {request_email}")
 			# A07-1: hardcoded default password
 			user = User.objects.create_user(username=request_username, password="12345")
 			Account.objects.create(user=user, name=request_username, email=request_email, balance=100)
@@ -36,6 +46,7 @@ def createAccountView(request):
 			# 	return render(request, 'pages/error.html', {'errormessage': f'choose a stronger password'})
 		
 		except IntegrityError:
+			logging.error(f"ERROR: Account Create Failed: username already exists: {request_username}")
 			return render(request, 'pages/error.html', {'errormessage': f'Account Create Failed: username already exists: {request_username}'})
 	else:
 		return redirect('/')
@@ -49,7 +60,10 @@ def updatePasswordView(request):
 		new_password = request.POST.get('newpassword')
 		request_username = request.user.username
 		user = User.objects.get(username=request_username)
-		print("UPDATING PASSWORD FOR", request_username, "as", new_password)
+		# A09-2: logging sensitive information (password) into log file
+		logging.info(f"UPDATING PASSWORD FOR {request_username} as {new_password}")
+		# FIX A09-2: logging the event but not the password
+		# logging.info(f"UPDATING PASSWORD FOR {request_username}")
 		try:
 			user.set_password(new_password)
 			user.save()
@@ -93,7 +107,10 @@ def transferView(request):
 		# to "PRANKED" by placing the following input into the transfer amount field:
 		# 0, email='PRANKED' --
 		amount = request.POST.get('amount')
-		print("sending ", amount, "from", sender_name, "to", receiver_name)
+		# A09-3: not logging recipient of transfer
+		logging.info(f"TRANSFERRING {amount} from {sender_name}")
+		# FIX A09-3: adding recipient information into log
+		# logging.info(f"TRANSFERRING {amount} from {sender_name} to {receiver_name}")
 		with connection.cursor() as cursor:
 			cursor.execute(f"""
 				UPDATE pages_account SET balance = balance - {amount} WHERE name = '{sender_name}';
@@ -119,8 +136,8 @@ def homePageView(request):
 	return render(request, 'pages/index.html', {'accounts': accounts})
 
 
-# A01: accessing BeautifulBalance page only requires attacker to know 
-# the user ID (insecure direct object reference)
+# A01: accessing BeautifulBalance page only requires attacker to
+# have an account of their own, and know the user ID of others (insecure direct object reference)
 @login_required
 def beautifulBalanceView(request, uid):
 	acc = Account.objects.get(user_id=uid)
