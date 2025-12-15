@@ -1,1 +1,3 @@
-*.sqlite3
+insecurebank/db.sqlite3
+.DS_Store
+insecurebank.log

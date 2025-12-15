@@ -13,10 +13,13 @@ logger = logging.getLogger("insecurebank")
 @receiver(user_logged_in)
 def log_user_login(sender, request, user, **kwargs):
     logger.info(
-        f"User logged in: {user.username}",
+        # A09: Omission of security relevant information, not logging IP address of login (potential hacker)
+        # f"User logged in: {user.username}",
+        # FIX A09: logging IP address of user logging in
+        f"User logged in: {user.username} from {request.META.get('REMOTE_ADDR')}",
         extra={
             "username": user.username,
-            "ip": request.META.get("REMOTE_ADDR"),
+            "ip": request.META.get("REMOTE_ADDR")
         },
     )
 
